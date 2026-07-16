@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Join the Giveaway!</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background: #0f0f16;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+        .box {
+            background: #1e1e24;
+            padding: 30px;
+            border-radius: 12px;
+            border: 1px solid #2d2d38;
+            width: 320px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+        }
+        h1 { color: #3ecf8e; margin-bottom: 10px; font-size: 28px; }
+        p { color: #8a8f98; margin-bottom: 25px; font-size: 14px; }
+        input {
+            width: 100%;
+            padding: 12px;
+            background: #15151a;
+            border: 1px solid #2d2d38;
+            border-radius: 6px;
+            color: white;
+            font-size: 16px;
+            box-sizing: border-box;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        input:focus { border-color: #3ecf8e; }
+        button {
+            background: #3ecf8e;
+            color: #0f0f16;
+            border: none;
+            padding: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+        }
+        button:hover { background: #4ef0a3; }
+        #status { margin-top: 15px; font-weight: bold; font-size: 14px; }
+        .success { color: #3ecf8e; }
+        .error { color: #ff4a5a; }
+    </style>
+</head>
+<body>
+
+    <div class="box">
+        <h1>Join the Spin! 🎡</h1>
+        <p>Type your name below to enter the live wheel.</p>
+        
+        <input type="text" id="username" placeholder="Enter your username..." maxlength="15">
+        <button onclick="submitName()">Submit Entry</button>
+        
+        <div id="status"></div>
+    </div>
+
+    <script>
+        // SUPABASE CONFIGURATION
+        const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; // <-- Put your key here!
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        async function submitName() {
+            const nameInput = document.getElementById("username");
+            const statusDiv = document.getElementById("status");
+            const username = nameInput.value.trim();
+
+            if (!username) {
+                statusDiv.className = "error";
+                statusDiv.textContent = "Please enter a name first!";
+                return;
+            }
+
+            statusDiv.className = "";
+            statusDiv.textContent = "Submitting...";
+
+            // Send name to your Supabase entries table!
+            const { data, error } = await supabaseClient
+                .from('entries')
+                .insert([{ username: username }]);
+
+            if (error) {
+                statusDiv.className = "error";
+                statusDiv.textContent = "Error: " + error.message;
+            } else {
+                statusDiv.className = "success";
+                statusDiv.textContent = "🎉 You're on the wheel!";
+                nameInput.value = ""; // clear input
+            }
+        }
+    </script>
+</body>
+</html>
