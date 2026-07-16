@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spin Lobby</title>
+    <!-- Supabase Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: white; padding: 50px; }
+        h1 { color: #3ecf8e; }
+        #names-list { margin-top: 20px; font-size: 20px; list-style-type: none; padding: 0; }
+        li { background: #1e1e1e; padding: 10px; margin: 5px auto; width: 300px; border-radius: 5px; border: 1px solid #333; }
+    </style>
+</head>
+<body>
+
+    <h1>🎡 Spin Lobby 🎡</h1>
+    <p>Names added in real-time will show up below:</p>
+    
+    <ul id="names-list"></ul>
+
+    <script>
+        // 1. YOUR SUPABASE KEYS
+        const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
+        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; // <-- Paste your key here!
+
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // 2. Load existing names when page opens
+        async function getExistingNames() {
+            const { data, error } = await supabaseClient.from('entries').select('username');
+            if (data) {
+                data.forEach(entry => addNameToList(entry.username));
+            }
+        }
+
+        // Helper to add name to screen
+        function addNameToList(name) {
+            const list = document.getElementById('names-list');
+            const li = document.createElement('li');
+            li.textContent = name;
+            list.appendChild(li);
+        }
+
+        // 3. LISTEN REAL-TIME FOR NEW NAMES!
+        supabaseClient
+            .channel('schema-db-changes')
+            .on('postgres_changes', 
+                { event: 'INSERT', schema: 'public', table: 'entries' }, 
+                payload => {
+                    addNameToList(payload.new.username);
+                }
+            )
+            .subscribe();
+
+        // Run on start
+        getExistingNames();
+    </script>
+</body>
+</html>
