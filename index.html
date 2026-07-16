@@ -3,396 +3,587 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🎡 Live Spin Wheel 🎡</title>
+    <title>StreamSpin Pro - Professional Live Giveaway Wheel</title>
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --bg-deep: #0a0a12;
+            --bg-panel: #14141f;
+            --primary: #8a2be2; /* Deep violet */
+            --primary-glow: rgba(138, 43, 226, 0.4);
+            --secondary: #4b0082; /* Indigo */
+            --accent: #00e5ff; /* Cyan accent */
+            --text-main: #f0f0f5;
+            --text-muted: #8a8f98;
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background: #0f0f16;
-            color: white;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             min-height: 100vh;
+            padding: 2rem;
+            overflow-x: hidden;
+        }
+
+        /* --- Header & Header Animation --- */
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            width: 100%;
+            max-width: 1200px;
         }
 
         h1 {
-            color: #3ecf8e;
-            text-shadow: 0 0 15px rgba(62, 207, 142, 0.4);
-            margin-bottom: 5px;
+            font-size: 2.5rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            color: var(--text-main);
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+            margin-bottom: 0.5rem;
         }
 
         .subtitle {
-            color: #8a8f98;
-            margin-bottom: 25px;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .container {
+        /* --- Main Application Layout --- */
+        .app-container {
             display: flex;
-            flex-direction: row;
+            width: 100%;
+            max-width: 1200px;
+            gap: 3rem;
             align-items: center;
             justify-content: center;
-            gap: 50px;
-            flex-wrap: wrap;
+            flex-wrap: wrap; /* Responsive wrap */
         }
 
-        /* Wheel Styling */
-        .wheel-container {
+        /* --- 1. WHEEL SECTION --- */
+        .wheel-section {
             position: relative;
-            width: 400px;
-            height: 400px;
+            flex: 0 0 500px;
+            width: 500px;
+            height: 500px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
-        /* The pointer arrow at the top */
-        .pointer {
-            position: absolute;
-            top: -15px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 0;
-            height: 0;
-            border-left: 15px solid transparent;
-            border-right: 15px solid transparent;
-            border-top: 30px solid #ff4a5a;
-            z-index: 10;
-            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        /* Responsive Wheel Resizing */
+        @media (max-width: 1100px) {
+            .app-container { gap: 1rem; flex-direction: column; }
+            .wheel-section { flex: 0 0 400px; width: 400px; height: 400px; }
+            canvas { width: 400px; height: 400px; }
+        }
+        @media (max-width: 500px) {
+            .wheel-section { flex: 0 0 300px; width: 300px; height: 300px; }
+            canvas { width: 300px; height: 300px; }
         }
 
         canvas {
             border-radius: 50%;
-            box-shadow: 0 0 30px rgba(62, 207, 142, 0.2), 0 0 0 10px #1e1e24;
-            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+            /* Minimalist outer glow for depth */
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 15px var(--primary-glow);
+            transition: transform 6s cubic-bezier(0.1, 0.9, 0.1, 1); /* Smooth 6s spin */
         }
 
-        /* Controls & Names List */
-        .panel {
-            background: #1e1e24;
-            padding: 25px;
-            border-radius: 12px;
-            border: 1px solid #2d2d38;
-            width: 300px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-            text-align: left;
+        /* Stylized Elegant Pointer */
+        .wheel-pointer {
+            position: absolute;
+            top: -10px; /* Slight offset for center alignment */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 40px;
+            height: 60px;
+            background-color: #fff;
+            clip-path: polygon(50% 100%, 0 0, 100% 0); /* Elegant triangle */
+            z-index: 10;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
+            border-bottom: 4px solid var(--accent); /* Minimal accent */
         }
 
-        .panel h2 {
-            margin-top: 0;
-            color: #3ecf8e;
-            border-bottom: 1px solid #2d2d38;
-            padding-bottom: 10px;
+        /* --- 2. DASHBOARD SECTION --- */
+        .dashboard-section {
+            flex: 1 1 400px; /* Responsive flex */
+            max-width: 500px;
+            background-color: var(--bg-panel);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255,255,255,0.03); /* Subtle border */
+            box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
         }
 
+        /* Spin Button - Refined and Professional */
         #spin-btn {
-            background: #3ecf8e;
-            color: #0f0f16;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
             border: none;
-            padding: 12px 25px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 6px;
+            padding: 1.25rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            border-radius: 12px;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 15px;
-            transition: all 0.2s;
-            box-shadow: 0 5px 15px rgba(62, 207, 142, 0.3);
+            transition: all 0.3s var(--ease);
+            letter-spacing: -0.5px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
         }
 
-        #spin-btn:hover {
-            background: #4ef0a3;
-            transform: translateY(-2px);
+        #spin-btn::after {
+            content: '';
+            position: absolute;
+            top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: all 0.6s var(--ease);
+        }
+
+        #spin-btn:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.5);
+        }
+
+        #spin-btn:hover:not(:disabled)::after {
+            left: 100%;
         }
 
         #spin-btn:disabled {
-            background: #2d2d38;
-            color: #555;
+            background: #252533;
+            color: #5a5a6e;
             cursor: not-allowed;
             transform: none;
             box-shadow: none;
         }
 
+        /* List Header */
+        .list-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            padding-bottom: 0.75rem;
+        }
+
+        .list-header h2 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--text-main);
+        }
+
+        .entry-count {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--accent);
+            background: rgba(0, 229, 255, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 8px;
+        }
+
+        /* Name List - Smooth Entrance */
         #names-list {
             list-style: none;
-            padding: 0;
-            margin: 0;
-            max-height: 200px;
+            max-height: 280px;
             overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            padding-right: 0.5rem;
         }
 
         #names-list li {
-            background: #15151a;
-            padding: 10px;
-            margin-bottom: 8px;
-            border-radius: 6px;
-            border-left: 4px solid #3ecf8e;
+            background-color: rgba(255,255,255,0.02);
+            padding: 1rem;
+            border-radius: 10px;
+            border-left: 3px solid var(--primary);
             font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s var(--ease);
+            animation: slideIn 0.4s var(--ease) forwards;
+            opacity: 0;
+            transform: translateY(10px);
         }
 
-        /* Winner Modal */
+        @keyframes slideIn {
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        #names-list li:hover {
+            background-color: rgba(255,255,255,0.04);
+            transform: translateX(3px);
+        }
+
+        .timestamp {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Scrollbar Styling */
+        #names-list::-webkit-scrollbar { width: 6px; }
+        #names-list::-webkit-scrollbar-track { background: transparent; }
+        #names-list::-webkit-scrollbar-thumb { background: #252533; border-radius: 3px; }
+
+        /* --- Winner Modal - Premium Overlay --- */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 100;
+            background-color: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px); /* Modern blur */
+            z-index: 1000;
             align-items: center;
             justify-content: center;
+            opacity: 0;
+            transition: opacity 0.5s var(--ease);
+        }
+
+        .modal.open {
+            display: flex;
+            opacity: 1;
         }
 
         .modal-content {
-            background: #1e1e24;
-            padding: 40px;
-            border-radius: 16px;
-            border: 2px solid #3ecf8e;
+            background-color: var(--bg-panel);
+            padding: 3rem;
+            border-radius: 24px;
+            border: 2px solid var(--accent);
             text-align: center;
-            box-shadow: 0 0 30px rgba(62, 207, 142, 0.5);
-            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 0 60px rgba(0, 229, 255, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.5s var(--ease);
+            width: 90%;
+            max-width: 500px;
         }
 
-        @keyframes popIn {
-            0% { transform: scale(0.5); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
+        .modal.open .modal-content {
+            transform: scale(1);
         }
 
         .modal-content h2 {
-            color: #3ecf8e;
-            font-size: 36px;
-            margin: 0 0 10px 0;
+            color: var(--accent);
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            margin-bottom: 0.5rem;
         }
 
         .modal-content p {
-            font-size: 20px;
-            color: #8a8f98;
-            margin: 0 0 20px 0;
+            font-size: 1.1rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
         }
 
         #winner-name {
-            font-size: 48px;
-            font-weight: bold;
+            font-size: 4rem;
+            font-weight: 900;
+            letter-spacing: -2px;
             color: white;
-            text-shadow: 0 0 15px rgba(255,255,255,0.5);
-            margin-bottom: 30px;
+            background: linear-gradient(135deg, #fff 0%, var(--accent) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 3rem;
+            line-height: 1;
         }
 
         .close-btn {
-            background: #ff4a5a;
+            background: rgba(255,255,255,0.05);
             color: white;
-            border: none;
-            padding: 10px 25px;
-            font-size: 16px;
-            border-radius: 6px;
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 1rem 2.5rem;
+            font-size: 1rem;
+            font-weight: 600;
+            border-radius: 10px;
             cursor: pointer;
+            transition: all 0.2s var(--ease);
         }
+
+        .close-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.2);
+        }
+        
     </style>
 </head>
 <body>
 
-    <h1>🎡 Live Spin Wheel 🎡</h1>
-    <p class="subtitle">Names added to your Supabase table will instantly join the wheel!</p>
+    <header>
+        <h1>StreamSpin<span style="color:var(--accent)">.</span></h1>
+        <p class="subtitle">Live giveaway wheel. Users join instantly.</p>
+    </header>
 
-    <div class="container">
-        <!-- Wheel Graphic -->
-        <div class="wheel-container">
-            <div class="pointer"></div>
-            <canvas id="wheel" width="400" height="400"></canvas>
-        </div>
+    <main class="app-container">
+        <!-- 1. WHEEL SECTION -->
+        <section class="wheel-section">
+            <div class="wheel-pointer"></div>
+            <!-- Canvas resolution multiplied by 2 for Retina/High-DPI sharp rendering -->
+            <canvas id="wheel" width="1000" height="1000" style="width: 500px; height: 500px;"></canvas>
+        </section>
 
-        <!-- Dashboard Panel -->
-        <div class="panel">
-            <button id="spin-btn" onclick="spinWheel()" disabled>SPIN WHEEL</button>
-            <h2>Entries (<span id="count">0</span>)</h2>
-            <ul id="names-list"></ul>
-        </div>
-    </div>
+        <!-- 2. DASHBOARD SECTION -->
+        <section class="dashboard-section">
+            <div class="list-header">
+                <h2>Live Entries</h2>
+                <span class="entry-count" id="count">0</span>
+            </div>
+            
+            <ul id="names-list">
+                <!-- Names dynamically populated here -->
+            </ul>
+            
+            <button id="spin-btn" onclick="spinWheel()" disabled>SPIN FOR WINNER</button>
+        </section>
+    </main>
 
-    <!-- Winner Announcement Popup -->
+    <!-- WINNER ANNOUNCEMENT MODAL -->
     <div id="winner-modal" class="modal">
         <div class="modal-content">
-            <h2>🏆 WE HAVE A WINNER! 🏆</h2>
-            <p>And the prize goes to...</p>
+            <h2>🎉 CONGRATULATIONS!</h2>
+            <p>The system has selected a winner:</p>
             <div id="winner-name">---</div>
-            <button class="close-btn" onclick="closeModal()">Awesome!</button>
+            <button class="close-btn" onclick="closeModal()">Back to Setup</button>
         </div>
     </div>
 
     <script>
-        // 1. SUPABASE CONFIGURATION
+        // --- 1. SUPABASE CONFIGURATION (PROFESSIONAL CONNECTION) ---
         const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; // <-- Put your key here!
+        
+        // !!! PASTE YOUR ANON PUBLIC KEY INSIDE THE QUOTES BELOW !!!
+        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; 
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // State Variables
+        // --- State & Setup ---
         let participants = [];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
-        const colors = ["#ff4a5a", "#3ecf8e", "#f5a623", "#4a90e2", "#b8e986", "#bd10e0", "#9013fe", "#50e3c2"];
+        
+        // Retina/High-DPI scaling
+        ctx.scale(2, 2); 
+        
+        // Deep Purple Smooth Color Palette for Wheel Segments
+        const palette = ["#8a2be2", "#4b0082", "#7b1fa2", "#6a1b9a", "#9c27b0", "#512da8"];
+        
         let currentRotation = 0;
         let isSpinning = false;
+        const spinButton = document.getElementById("spin-btn");
 
-        // Draw the wheel onto the canvas
+        // --- Professional Wheel Drawing (Sharp & Clean) ---
         function drawWheel() {
-            const numSegments = participants.length;
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            const segments = participants.length;
+            ctx.clearRect(0, 0, 500, 500); // Clear the scaled down logical area
 
-            if (numSegments === 0) {
-                // Empty state wheel
+            if (segments === 0) {
+                // Empty State: Sleek placeholder
                 ctx.beginPath();
-                ctx.arc(200, 200, 190, 0, 2 * Math.PI);
-                ctx.fillStyle = "#1e1e24";
+                ctx.arc(250, 250, 240, 0, 2 * Math.PI);
+                ctx.fillStyle = "#14141f";
                 ctx.fill();
-                ctx.lineWidth = 5;
-                ctx.strokeStyle = "#2d2d38";
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#252533";
                 ctx.stroke();
 
-                ctx.fillStyle = "#555";
-                ctx.font = "bold 16px Arial";
+                ctx.fillStyle = "#5a5a6e";
+                ctx.font = "600 18px Inter";
                 ctx.textAlign = "center";
-                ctx.fillText("Waiting for names...", 200, 205);
+                ctx.textBaseline = "middle";
+                ctx.fillText("Waiting for entries...", 250, 250);
                 return;
             }
 
-            const anglePerSegment = (2 * Math.PI) / numSegments;
+            const anglePerSeg = (2 * Math.PI) / segments;
 
-            for (let i = 0; i < numSegments; i++) {
-                const startAngle = i * anglePerSegment;
-                const endAngle = startAngle + anglePerSegment;
+            for (let i = 0; i < segments; i++) {
+                const startAngle = i * anglePerSeg;
+                const endAngle = startAngle + anglePerSeg;
 
-                // Draw Slice
+                // Draw Segment Slice
                 ctx.beginPath();
-                ctx.moveTo(200, 200);
-                ctx.arc(200, 200, 195, startAngle, endAngle);
-                ctx.fillStyle = colors[i % colors.length];
+                ctx.moveTo(250, 250);
+                ctx.arc(250, 250, 245, startAngle, endAngle);
+                ctx.fillStyle = palette[i % palette.length];
                 ctx.fill();
-                ctx.lineWidth = 2;
-                ctx.strokeStyle = "#0f0f16";
+                
+                // Minimalist separator lines
+                ctx.lineWidth = 1;
+                ctx.strokeStyle = "rgba(10, 10, 18, 0.5)";
                 ctx.stroke();
 
-                // Draw Name Text
+                // --- Professional Name Typography ---
                 ctx.save();
-                ctx.translate(200, 200);
-                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.translate(250, 250);
+                ctx.rotate(startAngle + anglePerSeg / 2);
+                
                 ctx.textAlign = "right";
+                ctx.textBaseline = "middle";
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "bold 16px Arial";
-                // Don't let text overflow outside wheel boundary
-                const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
-                ctx.fillText(displayName, 180, 5);
+                ctx.font = "700 16px Inter"; // Clean, bold font
+                
+                // Subtle shadow for readability against any segment color
+                ctx.shadowColor = "rgba(0,0,0,0.5)";
+                ctx.shadowBlur = 4;
+
+                const name = participants[i];
+                // Clean truncation if too long
+                const displayName = name.length > 15 ? name.substring(0, 13) + '..' : name;
+                
+                // Professional padding from edge
+                ctx.fillText(displayName, 230, 0); 
                 ctx.restore();
             }
 
-            // Outer ring
+            // --- Elegant Center Pin ---
+            // Outer Ring
             ctx.beginPath();
-            ctx.arc(200, 200, 195, 0, 2 * Math.PI);
-            ctx.lineWidth = 8;
-            ctx.strokeStyle = "#1e1e24";
-            ctx.stroke();
-
-            // Center Pin
-            ctx.beginPath();
-            ctx.arc(200, 200, 20, 0, 2 * Math.PI);
-            ctx.fillStyle = "#ffffff";
+            ctx.arc(250, 250, 35, 0, 2 * Math.PI);
+            ctx.fillStyle = "#0a0a12";
             ctx.fill();
-            ctx.lineWidth = 5;
-            ctx.strokeStyle = "#3ecf8e";
+            ctx.lineWidth = 3;
+            ctx.strokeStyle = "#ffffff";
             ctx.stroke();
+            
+            // Inner Fill
+            ctx.beginPath();
+            ctx.arc(250, 250, 30, 0, 2 * Math.PI);
+            ctx.fillStyle = palette[1]; // Use Indigo
+            ctx.fill();
         }
 
-        // Logic to Spin the Wheel
+        // --- Logic: High-Performance Spin ---
         function spinWheel() {
             if (isSpinning || participants.length === 0) return;
             isSpinning = true;
-            document.getElementById("spin-btn").disabled = true;
+            spinButton.disabled = true;
+            spinButton.textContent = "SPINNING...";
 
-            // Pick a random index as the winner
+            // Determine winner randomly
             const winnerIndex = Math.floor(Math.random() * participants.length);
+            const segments = participants.length;
+            const anglePerSeg = 360 / segments;
             
-            // Calculate rotational target
-            const numSegments = participants.length;
-            const anglePerSegment = 360 / numSegments;
+            // Calculate precise rotation required to end pointing at 270 degrees (Top)
+            // We factor in the width of the segment to land in the center.
+            const targetRotation = 270 - (winnerIndex * anglePerSeg) - (anglePerSeg / 2);
             
-            // Math to ensure the wheel ends rotating on the selected segment pointing directly up (270 degrees)
-            const targetAngle = 270 - (winnerIndex * anglePerSegment) - (anglePerSegment / 2);
-            const extraSpins = 5 * 360; // Spin around 5 times before stopping
-            const finalRotation = extraSpins + targetAngle;
+            // 8 Full Spins (2880 deg) + target angle for excitement
+            const finalRotation = 2880 + targetRotation;
 
+            // Apply smooth CSS transformation
             canvas.style.transform = `rotate(${finalRotation}deg)`;
 
-            // Wait 4 seconds for transition animation to complete
+            // Wait 6 seconds for the animation to finish
             setTimeout(() => {
-                const winner = participants[winnerIndex];
-                
-                // Show modal with winner name
-                document.getElementById("winner-name").textContent = winner;
-                document.getElementById("winner-modal").style.display = "flex";
+                announceWinner(participants[winnerIndex]);
+                resetWheelAnimation(finalRotation);
+            }, 6000);
+        }
 
-                // Reset rotation cleanly behind the scenes
-                canvas.style.transition = "none";
-                const normalizedAngle = finalRotation % 360;
-                canvas.style.transform = `rotate(${normalizedAngle}deg)`;
-                
-                isSpinning = false;
-                document.getElementById("spin-btn").disabled = false;
-                
-                // Re-enable CSS transition for the next spin
-                setTimeout(() => {
-                    canvas.style.transition = "transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)";
-                }, 50);
+        function announceWinner(winner) {
+            const modal = document.getElementById("winner-modal");
+            document.getElementById("winner-name").textContent = winner;
+            modal.classList.add("open");
+        }
 
-            }, 4000);
+        function resetWheelAnimation(finalRotation) {
+            // Immediately stop CSS transition
+            canvas.style.transition = "none";
+            // Normalize the angle (keep it between 0-359)
+            const normalizedAngle = finalRotation % 360;
+            // Set the wheel position to that angle without any animation
+            canvas.style.transform = `rotate(${normalizedAngle}deg)`;
+            
+            isSpinning = false;
+            spinButton.disabled = false;
+            spinButton.textContent = "SPIN FOR WINNER";
+            
+            // Allow CSS transition again for the next spin (after a tiny delay)
+            setTimeout(() => {
+                canvas.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.1, 1)";
+            }, 50);
         }
 
         function closeModal() {
-            document.getElementById("winner-modal").style.display = "none";
+            document.getElementById("winner-modal").classList.remove("open");
         }
 
-        // Add visual item to sidebar
-        function renderName(name) {
+        // --- UI Update: Professional Realtime Integration ---
+        function addNameToList(name) {
             const list = document.getElementById('names-list');
             const li = document.createElement('li');
-            li.textContent = name;
-            list.appendChild(li);
+            
+            // Add user name and subtle timestamp
+            li.innerHTML = `
+                <span class="name">${name}</span>
+                <span class="timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
+            `;
+            
+            // Modern feel: Newest entry always at top
+            list.prepend(li);
         }
 
-        // Main function to refresh state
         function updateUI() {
             document.getElementById("count").textContent = participants.length;
-            document.getElementById("spin-btn").disabled = (participants.length === 0 || isSpinning);
+            spinButton.disabled = (participants.length === 0 || isSpinning);
             drawWheel();
         }
 
-        // Fetch current database entries on startup
+        // --- Supabase Realtime Logic ---
         async function loadExistingNames() {
-            const { data, error } = await supabaseClient.from('entries').select('username');
+            const { data, error } = await supabaseClient.from('entries').select('username').order('created_at', { ascending: false });
             if (data) {
-                participants = data.map(entry => entry.username);
+                // Populate internal state
+                participants = data.map(entry => entry.username).reverse(); // Reverse for consistent spin order
+                
+                // Populate List UI
                 const list = document.getElementById('names-list');
                 list.innerHTML = "";
-                participants.forEach(name => renderName(name));
+                // Add in descending order so newest is on top
+                data.forEach(entry => addNameToList(entry.username));
+                
                 updateUI();
+            } else if (error) {
+                console.error("Setup Error: API Key might be invalid.", error.message);
+                spinButton.textContent = "CONNECTION ERROR";
             }
         }
 
-        // Listen for brand-new entries in real-time
+        // Professional Realtime Subscription
         supabaseClient
-            .channel('schema-db-changes')
+            .channel('public:entries')
             .on('postgres_changes', 
                 { event: 'INSERT', schema: 'public', table: 'entries' }, 
                 payload => {
                     const newName = payload.new.username;
+                    // Update state
                     participants.push(newName);
-                    renderName(newName);
+                    // Add smooth UI update
+                    addNameToList(newName);
                     updateUI();
                 }
             )
             .subscribe();
 
-        // Initial setup
+        // Start connection
         loadExistingNames();
+
     </script>
 </body>
 </html>
