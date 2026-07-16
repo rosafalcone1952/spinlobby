@@ -68,7 +68,7 @@
             gap: 3rem;
             align-items: center;
             justify-content: center;
-            flex-wrap: wrap; /* Responsive wrap */
+            flex-wrap: wrap;
         }
 
         /* --- 1. WHEEL SECTION --- */
@@ -95,41 +95,40 @@
 
         canvas {
             border-radius: 50%;
-            /* Minimalist outer glow for depth */
             box-shadow: 0 0 40px rgba(0, 0, 0, 0.8), 0 0 15px var(--primary-glow);
-            transition: transform 6s cubic-bezier(0.1, 0.9, 0.1, 1); /* Smooth 6s spin */
+            transition: transform 6s cubic-bezier(0.1, 0.9, 0.1, 1);
         }
 
         /* Stylized Elegant Pointer */
         .wheel-pointer {
             position: absolute;
-            top: -10px; /* Slight offset for center alignment */
+            top: -10px;
             left: 50%;
             transform: translateX(-50%);
             width: 40px;
             height: 60px;
             background-color: #fff;
-            clip-path: polygon(50% 100%, 0 0, 100% 0); /* Elegant triangle */
+            clip-path: polygon(50% 100%, 0 0, 100% 0);
             z-index: 10;
             filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5));
-            border-bottom: 4px solid var(--accent); /* Minimal accent */
+            border-bottom: 4px solid var(--accent);
         }
 
         /* --- 2. DASHBOARD SECTION --- */
         .dashboard-section {
-            flex: 1 1 400px; /* Responsive flex */
+            flex: 1 1 400px;
             max-width: 500px;
             background-color: var(--bg-panel);
-            border-radius: 20px;
+            border-radius: 24px;
             padding: 2rem;
-            border: 1px solid rgba(255,255,255,0.03); /* Subtle border */
+            border: 1px solid rgba(255,255,255,0.03);
             box-shadow: 0 15px 35px rgba(0,0,0,0.4);
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
         }
 
-        /* Spin Button - Refined and Professional */
+        /* Spin Button */
         #spin-btn {
             background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
             color: white;
@@ -196,7 +195,7 @@
             border-radius: 8px;
         }
 
-        /* Name List - Smooth Entrance */
+        /* Name List */
         #names-list {
             list-style: none;
             max-height: 280px;
@@ -236,18 +235,17 @@
             color: var(--text-muted);
         }
 
-        /* Scrollbar Styling */
         #names-list::-webkit-scrollbar { width: 6px; }
         #names-list::-webkit-scrollbar-track { background: transparent; }
         #names-list::-webkit-scrollbar-thumb { background: #252533; border-radius: 3px; }
 
-        /* --- Winner Modal - Premium Overlay --- */
+        /* --- Winner Modal --- */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
             background-color: rgba(0,0,0,0.85);
-            backdrop-filter: blur(10px); /* Modern blur */
+            backdrop-filter: blur(10px);
             z-index: 1000;
             align-items: center;
             justify-content: center;
@@ -319,7 +317,6 @@
             background: rgba(255,255,255,0.1);
             border-color: rgba(255,255,255,0.2);
         }
-        
     </style>
 </head>
 <body>
@@ -333,7 +330,6 @@
         <!-- 1. WHEEL SECTION -->
         <section class="wheel-section">
             <div class="wheel-pointer"></div>
-            <!-- Canvas resolution multiplied by 2 for Retina/High-DPI sharp rendering -->
             <canvas id="wheel" width="1000" height="1000" style="width: 500px; height: 500px;"></canvas>
         </section>
 
@@ -344,9 +340,7 @@
                 <span class="entry-count" id="count">0</span>
             </div>
             
-            <ul id="names-list">
-                <!-- Names dynamically populated here -->
-            </ul>
+            <ul id="names-list"></ul>
             
             <button id="spin-btn" onclick="spinWheel()" disabled>SPIN FOR WINNER</button>
         </section>
@@ -363,36 +357,30 @@
     </div>
 
     <script>
-        // --- 1. SUPABASE CONFIGURATION (PROFESSIONAL CONNECTION) ---
         const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
-        
-        // !!! PASTE YOUR ANON PUBLIC KEY INSIDE THE QUOTES BELOW !!!
         const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; 
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- State & Setup ---
+        // State & Setup
         let participants = [];
         const canvas = document.getElementById("wheel");
         const ctx = canvas.getContext("2d");
         
-        // Retina/High-DPI scaling
         ctx.scale(2, 2); 
         
-        // Deep Purple Smooth Color Palette for Wheel Segments
+        // Deep Purple Palette
         const palette = ["#8a2be2", "#4b0082", "#7b1fa2", "#6a1b9a", "#9c27b0", "#512da8"];
         
         let currentRotation = 0;
         let isSpinning = false;
         const spinButton = document.getElementById("spin-btn");
 
-        // --- Professional Wheel Drawing (Sharp & Clean) ---
         function drawWheel() {
             const segments = participants.length;
-            ctx.clearRect(0, 0, 500, 500); // Clear the scaled down logical area
+            ctx.clearRect(0, 0, 500, 500);
 
             if (segments === 0) {
-                // Empty State: Sleek placeholder
                 ctx.beginPath();
                 ctx.arc(250, 250, 240, 0, 2 * Math.PI);
                 ctx.fillStyle = "#14141f";
@@ -415,19 +403,16 @@
                 const startAngle = i * anglePerSeg;
                 const endAngle = startAngle + anglePerSeg;
 
-                // Draw Segment Slice
                 ctx.beginPath();
                 ctx.moveTo(250, 250);
                 ctx.arc(250, 250, 245, startAngle, endAngle);
                 ctx.fillStyle = palette[i % palette.length];
                 ctx.fill();
                 
-                // Minimalist separator lines
                 ctx.lineWidth = 1;
                 ctx.strokeStyle = "rgba(10, 10, 18, 0.5)";
                 ctx.stroke();
 
-                // --- Professional Name Typography ---
                 ctx.save();
                 ctx.translate(250, 250);
                 ctx.rotate(startAngle + anglePerSeg / 2);
@@ -435,23 +420,18 @@
                 ctx.textAlign = "right";
                 ctx.textBaseline = "middle";
                 ctx.fillStyle = "#ffffff";
-                ctx.font = "700 16px Inter"; // Clean, bold font
+                ctx.font = "700 16px Inter";
                 
-                // Subtle shadow for readability against any segment color
                 ctx.shadowColor = "rgba(0,0,0,0.5)";
                 ctx.shadowBlur = 4;
 
                 const name = participants[i];
-                // Clean truncation if too long
                 const displayName = name.length > 15 ? name.substring(0, 13) + '..' : name;
                 
-                // Professional padding from edge
                 ctx.fillText(displayName, 230, 0); 
                 ctx.restore();
             }
 
-            // --- Elegant Center Pin ---
-            // Outer Ring
             ctx.beginPath();
             ctx.arc(250, 250, 35, 0, 2 * Math.PI);
             ctx.fillStyle = "#0a0a12";
@@ -460,36 +440,27 @@
             ctx.strokeStyle = "#ffffff";
             ctx.stroke();
             
-            // Inner Fill
             ctx.beginPath();
             ctx.arc(250, 250, 30, 0, 2 * Math.PI);
-            ctx.fillStyle = palette[1]; // Use Indigo
+            ctx.fillStyle = palette[1];
             ctx.fill();
         }
 
-        // --- Logic: High-Performance Spin ---
         function spinWheel() {
             if (isSpinning || participants.length === 0) return;
             isSpinning = true;
             spinButton.disabled = true;
             spinButton.textContent = "SPINNING...";
 
-            // Determine winner randomly
             const winnerIndex = Math.floor(Math.random() * participants.length);
             const segments = participants.length;
             const anglePerSeg = 360 / segments;
             
-            // Calculate precise rotation required to end pointing at 270 degrees (Top)
-            // We factor in the width of the segment to land in the center.
             const targetRotation = 270 - (winnerIndex * anglePerSeg) - (anglePerSeg / 2);
-            
-            // 8 Full Spins (2880 deg) + target angle for excitement
             const finalRotation = 2880 + targetRotation;
 
-            // Apply smooth CSS transformation
             canvas.style.transform = `rotate(${finalRotation}deg)`;
 
-            // Wait 6 seconds for the animation to finish
             setTimeout(() => {
                 announceWinner(participants[winnerIndex]);
                 resetWheelAnimation(finalRotation);
@@ -503,18 +474,14 @@
         }
 
         function resetWheelAnimation(finalRotation) {
-            // Immediately stop CSS transition
             canvas.style.transition = "none";
-            // Normalize the angle (keep it between 0-359)
             const normalizedAngle = finalRotation % 360;
-            // Set the wheel position to that angle without any animation
             canvas.style.transform = `rotate(${normalizedAngle}deg)`;
             
             isSpinning = false;
             spinButton.disabled = false;
             spinButton.textContent = "SPIN FOR WINNER";
             
-            // Allow CSS transition again for the next spin (after a tiny delay)
             setTimeout(() => {
                 canvas.style.transition = "transform 6s cubic-bezier(0.1, 0.9, 0.1, 1)";
             }, 50);
@@ -524,18 +491,15 @@
             document.getElementById("winner-modal").classList.remove("open");
         }
 
-        // --- UI Update: Professional Realtime Integration ---
         function addNameToList(name) {
             const list = document.getElementById('names-list');
             const li = document.createElement('li');
             
-            // Add user name and subtle timestamp
             li.innerHTML = `
                 <span class="name">${name}</span>
                 <span class="timestamp">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</span>
             `;
             
-            // Modern feel: Newest entry always at top
             list.prepend(li);
         }
 
@@ -545,45 +509,34 @@
             drawWheel();
         }
 
-        // --- Supabase Realtime Logic ---
         async function loadExistingNames() {
             const { data, error } = await supabaseClient.from('entries').select('username').order('created_at', { ascending: false });
             if (data) {
-                // Populate internal state
-                participants = data.map(entry => entry.username).reverse(); // Reverse for consistent spin order
-                
-                // Populate List UI
+                participants = data.map(entry => entry.username).reverse();
                 const list = document.getElementById('names-list');
                 list.innerHTML = "";
-                // Add in descending order so newest is on top
                 data.forEach(entry => addNameToList(entry.username));
-                
                 updateUI();
             } else if (error) {
-                console.error("Setup Error: API Key might be invalid.", error.message);
+                console.error("Setup Error", error.message);
                 spinButton.textContent = "CONNECTION ERROR";
             }
         }
 
-        // Professional Realtime Subscription
         supabaseClient
             .channel('public:entries')
             .on('postgres_changes', 
                 { event: 'INSERT', schema: 'public', table: 'entries' }, 
                 payload => {
                     const newName = payload.new.username;
-                    // Update state
                     participants.push(newName);
-                    // Add smooth UI update
                     addNameToList(newName);
                     updateUI();
                 }
             )
             .subscribe();
 
-        // Start connection
         loadExistingNames();
-
     </script>
 </body>
 </html>
