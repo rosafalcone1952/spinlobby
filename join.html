@@ -25,7 +25,6 @@
             background-color: var(--bg-deep);
             color: var(--text-main);
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
@@ -39,216 +38,120 @@
             border-radius: 24px;
             padding: 2.5rem 2rem;
             border: 1px solid rgba(255, 255, 255, 0.03);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.05);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
             text-align: center;
         }
 
-        .logo {
-            font-size: 2rem;
-            font-weight: 800;
-            letter-spacing: -1px;
-            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 0.5rem;
-        }
+        .logo { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #fff 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2rem; }
 
-        .title {
-            font-size: 1.25rem;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
+        .form-group { margin-bottom: 1.5rem; text-align: left; }
 
-        .subtitle {
-            font-size: 0.95rem;
-            color: var(--text-muted);
-            margin-bottom: 2rem;
-            line-height: 1.4;
-        }
-
-        .form-group {
-            position: relative;
-            margin-bottom: 1.5rem;
-            text-align: left;
-        }
-
-        label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            margin-bottom: 0.5rem;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input[type="text"] {
-            width: 100%;
-            background-color: rgba(255, 255, 255, 0.02);
-            border: 1.5px solid rgba(255, 255, 255, 0.08);
-            border-radius: 12px;
-            padding: 1rem 1.25rem;
-            color: white;
+        input[type="text"] { 
+            width: 100%; 
+            background-color: rgba(255, 255, 255, 0.02); 
+            border: 1.5px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 12px; 
+            padding: 1rem 1.25rem; 
+            color: white; 
             font-size: 1rem;
-            font-family: inherit;
-            transition: all 0.25s var(--ease);
         }
 
-        input[type="text"]:focus {
-            outline: none;
-            border-color: var(--primary);
-            background-color: rgba(138, 43, 226, 0.03);
-            box-shadow: 0 0 15px var(--primary-glow);
+        .submit-btn { 
+            background: linear-gradient(135deg, var(--primary) 0%, #512da8 100%); 
+            color: white; 
+            border: none; 
+            padding: 1.1rem; 
+            border-radius: 12px; 
+            cursor: pointer; 
+            width: 100%; 
+            font-weight: 700; 
+            transition: all 0.3s ease;
         }
 
-        .submit-btn {
-            background: linear-gradient(135deg, var(--primary) 0%, #512da8 100%);
-            color: white;
-            border: none;
-            padding: 1.1rem;
-            font-size: 1.05rem;
-            font-weight: 700;
-            border-radius: 12px;
-            cursor: pointer;
-            width: 100%;
-            transition: all 0.3s var(--ease);
-            letter-spacing: -0.2px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-        }
+        .submit-btn:disabled { background: #252533; color: #5a5a6e; cursor: not-allowed; }
 
-        .submit-btn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
-        }
-
-        .submit-btn:disabled {
-            background: #252533;
-            color: #5a5a6e;
-            cursor: not-allowed;
-            transform: none;
-            box-shadow: none;
-        }
-
-        .status-message {
-            margin-top: 1.5rem;
-            font-size: 0.95rem;
-            font-weight: 500;
-            display: none;
-            padding: 1rem;
-            border-radius: 10px;
-            animation: popIn 0.3s var(--ease) forwards;
-        }
-
-        @keyframes popIn {
-            0% { transform: scale(0.9); opacity: 0; }
-            100% { transform: scale(1); opacity: 1; }
-        }
-
-        .status-success {
-            display: block;
-            background-color: rgba(0, 229, 255, 0.1);
-            color: var(--accent);
-            border: 1px solid rgba(0, 229, 255, 0.2);
-        }
-
-        .status-error {
-            display: block;
-            background-color: rgba(255, 74, 90, 0.1);
-            color: #ff4a5a;
-            border: 1px solid rgba(255, 74, 90, 0.2);
-        }
+        .status-message { margin-top: 1.5rem; padding: 1rem; border-radius: 10px; display: none; }
+        .status-error { display: block; background: rgba(255, 74, 90, 0.1); color: #ff4a5a; border: 1px solid rgba(255, 74, 90, 0.2); }
+        .status-success { display: block; background: rgba(0, 229, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 229, 255, 0.2); }
     </style>
 </head>
 <body>
 
     <div class="join-card">
         <div class="logo">StreamSpin<span style="color:var(--accent)">.</span></div>
-        <h2 class="title">Giveaway Entry</h2>
-        <p class="subtitle">Enter your name below to instantly join the active wheel stream.</p>
-
         <form id="join-form" onsubmit="submitEntry(event)">
             <div class="form-group">
-                <label for="username">Your Name / Handle</label>
-                <input type="text" id="username" placeholder="Type here..." required autocomplete="off" maxlength="15">
+                <input type="text" id="username" placeholder="Enter your name..." required maxlength="15" autocomplete="off">
             </div>
-            
             <button type="submit" id="submit-btn" class="submit-btn">ENTER THE WHEEL</button>
         </form>
-
         <div id="status-box" class="status-message"></div>
     </div>
 
     <script>
         const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
         const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; 
-
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        
+        const forbiddenWords = ['nigger', 'nigga', 'faggot', 'kike', 'retard', 'tranny', 'chink', 'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'whore'];
 
-        // --- FILTER CONFIGURATION ---
-        // Keep these lowercase. The script automatically converts inputs to lowercase to check.
-        const forbiddenWords = [
-            'nigger', 'nigga', 'faggot', 'kike', 'retard', 'tranny', 'chink', // Hate speech
-            'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'whore' // Swear words
-        ];
+        function checkTimeout() {
+            const timeoutEnd = localStorage.getItem('timeoutEnd');
+            if (timeoutEnd && Date.now() < parseInt(timeoutEnd)) {
+                const btn = document.getElementById("submit-btn");
+                btn.disabled = true;
+                btn.textContent = "TIMEOUT ACTIVE";
+                const box = document.getElementById("status-box");
+                box.textContent = "❌ You are timed out for 5 minutes.";
+                box.className = "status-message status-error";
+                box.style.display = "block";
+                return true;
+            }
+            return false;
+        }
+        checkTimeout();
 
         async function submitEntry(event) {
             event.preventDefault();
-            
+            if (checkTimeout()) return;
+
             const submitBtn = document.getElementById("submit-btn");
             const statusBox = document.getElementById("status-box");
-            const usernameInput = document.getElementById("username");
-            const nameVal = usernameInput.value.trim();
+            const nameInput = document.getElementById("username");
+            const nameVal = nameInput.value.trim();
 
-            if (!nameVal) return;
-
-            // Reset status states
-            statusBox.style.display = "none";
-            statusBox.className = "status-message";
-
-            // 1. Anti-Swear/Anti-Racism Filter Check
-            const lowerName = nameVal.toLowerCase();
-            const isForbidden = forbiddenWords.some(word => lowerName.includes(word));
-            if (isForbidden) {
-                statusBox.textContent = "❌ Inappropriate language is not allowed.";
-                statusBox.classList.add("status-error");
+            const cleanName = nameVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+            if (forbiddenWords.some(word => cleanName.includes(word))) {
+                localStorage.setItem('timeoutEnd', Date.now() + 300000); // 5 mins
+                checkTimeout();
                 return;
             }
 
-            // 2. Anti-Spam: Character Limit Check
-            if (nameVal.length < 2 || nameVal.length > 15) {
-                statusBox.textContent = "❌ Name must be between 2 and 15 characters.";
-                statusBox.classList.add("status-error");
+            if (nameVal.length < 2) {
+                statusBox.textContent = "❌ Name too short.";
+                statusBox.className = "status-message status-error";
                 return;
             }
 
-            // Lock submit button immediately
             submitBtn.disabled = true;
             submitBtn.textContent = "ENTERING...";
 
             try {
-                // Insert name into Supabase
-                const { error } = await supabaseClient
-                    .from('entries')
-                    .insert([{ username: nameVal }]);
-
+                const { error } = await supabaseClient.from('entries').insert([{ username: nameVal }]);
                 if (error) throw error;
 
-                // Success
-                statusBox.textContent = "🎉 You're on the wheel! Watch the stream!";
-                statusBox.classList.add("status-success");
-                usernameInput.value = ""; 
-                submitBtn.textContent = "SUBMITTED!";
+                statusBox.textContent = "🎉 You're on the wheel!";
+                statusBox.className = "status-message status-success";
+                nameInput.value = "";
                 
-                // Anti-Spam Cooldown: 4 seconds before they can submit another name
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.textContent = "ENTER THE WHEEL";
-                }, 4000);
-                
+                setTimeout(() => { 
+                    submitBtn.disabled = false; 
+                    submitBtn.textContent = "ENTER THE WHEEL"; 
+                    statusBox.style.display = "none";
+                }, 3000);
             } catch (err) {
-                console.error("Submission failed: ", err.message);
                 statusBox.textContent = "❌ Connection failed. Try again.";
-                statusBox.classList.add("status-error");
+                statusBox.className = "status-message status-error";
                 submitBtn.disabled = false;
                 submitBtn.textContent = "ENTER THE WHEEL";
             }
