@@ -3,108 +3,233 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join the Giveaway!</title>
+    <title>Join the Giveaway - StreamSpin</title>
+    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
+        :root {
+            --bg-deep: #0a0a12;
+            --bg-panel: #14141f;
+            --primary: #8a2be2; /* Deep violet */
+            --primary-glow: rgba(138, 43, 226, 0.3);
+            --accent: #00e5ff; /* Cyan accent */
+            --text-main: #f0f0f5;
+            --text-muted: #8a8f98;
+            --ease: cubic-bezier(0.23, 1, 0.32, 1);
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            text-align: center;
-            background: #0f0f16;
-            color: white;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-deep);
+            color: var(--text-main);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            padding: 1.5rem;
         }
-        .box {
-            background: #1e1e24;
-            padding: 30px;
-            border-radius: 12px;
-            border: 1px solid #2d2d38;
-            width: 320px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
-        }
-        h1 { color: #3ecf8e; margin-bottom: 10px; font-size: 28px; }
-        p { color: #8a8f98; margin-bottom: 25px; font-size: 14px; }
-        input {
+
+        /* Container Card */
+        .join-card {
             width: 100%;
-            padding: 12px;
-            background: #15151a;
-            border: 1px solid #2d2d38;
-            border-radius: 6px;
-            color: white;
-            font-size: 16px;
-            box-sizing: border-box;
-            margin-bottom: 15px;
-            outline: none;
+            max-width: 420px;
+            background-color: var(--bg-panel);
+            border-radius: 24px;
+            padding: 2.5rem 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.05);
+            text-align: center;
+            transition: transform 0.3s var(--ease);
         }
-        input:focus { border-color: #3ecf8e; }
-        button {
-            background: #3ecf8e;
-            color: #0f0f16;
+
+        /* Header Elements */
+        .logo {
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: -1px;
+            background: linear-gradient(135deg, #fff 0%, var(--primary) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            font-size: 0.95rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            line-height: 1.4;
+        }
+
+        /* Form Controls */
+        .form-group {
+            position: relative;
+            margin-bottom: 1.5rem;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            margin-bottom: 0.5rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            background-color: rgba(255, 255, 255, 0.02);
+            border: 1.5px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            padding: 1rem 1.25rem;
+            color: white;
+            font-size: 1rem;
+            font-family: inherit;
+            transition: all 0.25s var(--ease);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: var(--primary);
+            background-color: rgba(138, 43, 226, 0.03);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        /* Submit Button */
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary) 0%, #512da8 100%);
+            color: white;
             border: none;
-            padding: 12px;
-            font-size: 16px;
-            font-weight: bold;
-            border-radius: 6px;
+            padding: 1.1rem;
+            font-size: 1.05rem;
+            font-weight: 700;
+            border-radius: 12px;
             cursor: pointer;
             width: 100%;
-            transition: all 0.2s;
+            transition: all 0.3s var(--ease);
+            letter-spacing: -0.2px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
         }
-        button:hover { background: #4ef0a3; }
-        #status { margin-top: 15px; font-weight: bold; font-size: 14px; }
-        .success { color: #3ecf8e; }
-        .error { color: #ff4a5a; }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(138, 43, 226, 0.4);
+        }
+
+        .submit-btn:disabled {
+            background: #252533;
+            color: #5a5a6e;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Status States */
+        .status-message {
+            margin-top: 1.5rem;
+            font-size: 0.95rem;
+            font-weight: 500;
+            display: none;
+            padding: 1rem;
+            border-radius: 10px;
+            animation: popIn 0.3s var(--ease) forwards;
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.9); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .status-success {
+            display: block;
+            background-color: rgba(0, 229, 255, 0.1);
+            color: var(--accent);
+            border: 1px solid rgba(0, 229, 255, 0.2);
+        }
+
+        .status-error {
+            display: block;
+            background-color: rgba(255, 74, 90, 0.1);
+            color: #ff4a5a;
+            border: 1px solid rgba(255, 74, 90, 0.2);
+        }
     </style>
 </head>
 <body>
 
-    <div class="box">
-        <h1>Join the Spin! 🎡</h1>
-        <p>Type your name below to enter the live wheel.</p>
-        
-        <input type="text" id="username" placeholder="Enter your username..." maxlength="15">
-        <button onclick="submitName()">Submit Entry</button>
-        
-        <div id="status"></div>
+    <div class="join-card">
+        <div class="logo">StreamSpin<span style="color:var(--accent)">.</span></div>
+        <h2 class="title">Giveaway Entry</h2>
+        <p class="subtitle">Enter your name below to instantly join the active wheel stream.</p>
+
+        <form id="join-form" onsubmit="submitEntry(event)">
+            <div class="form-group">
+                <label for="username">Your Name / Handle</label>
+                <input type="text" id="username" placeholder="Type here..." required autocomplete="off" maxlength="15">
+            </div>
+            
+            <button type="submit" id="submit-btn" class="submit-btn">ENTER THE WHEEL</button>
+        </form>
+
+        <div id="status-box" class="status-message"></div>
     </div>
 
     <script>
-        // SUPABASE CONFIGURATION
+        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; // <-- Put your key here!
+        
+        // !!! PASTE YOUR SAME ANON KEY HERE !!!
+        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; 
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        async function submitName() {
-            const nameInput = document.getElementById("username");
-            const statusDiv = document.getElementById("status");
-            const username = nameInput.value.trim();
+        async function submitEntry(event) {
+            event.preventDefault();
+            
+            const submitBtn = document.getElementById("submit-btn");
+            const statusBox = document.getElementById("status-box");
+            const usernameInput = document.getElementById("username");
+            const nameVal = usernameInput.value.trim();
 
-            if (!username) {
-                statusDiv.className = "error";
-                statusDiv.textContent = "Please enter a name first!";
-                return;
-            }
+            if (!nameVal) return;
 
-            statusDiv.className = "";
-            statusDiv.textContent = "Submitting...";
+            // Lock the button so they don't spam it
+            submitBtn.disabled = true;
+            submitBtn.textContent = "ENTERING...";
+            
+            statusBox.style.display = "none";
+            statusBox.className = "status-message";
 
-            // Send name to your Supabase entries table!
-            const { data, error } = await supabaseClient
-                .from('entries')
-                .insert([{ username: username }]);
+            try {
+                // Insert name into Supabase
+                const { error } = await supabaseClient
+                    .from('entries')
+                    .insert([{ username: nameVal }]);
 
-            if (error) {
-                statusDiv.className = "error";
-                statusDiv.textContent = "Error: " + error.message;
-            } else {
-                statusDiv.className = "success";
-                statusDiv.textContent = "🎉 You're on the wheel!";
-                nameInput.value = ""; // clear input
+                if (error) throw error;
+
+                // Success State
+                statusBox.textContent = "🎉 You're on the wheel! Watch the stream!";
+                statusBox.classList.add("status-success");
+                usernameInput.value = ""; // Clear the input
+                submitBtn.textContent = "SUBMITTED!";
+                
+            } catch (err) {
+                console.error("Submission failed: ", err.message);
+                statusBox.textContent = "❌ Connection failed. Try again.";
+                statusBox.classList.add("status-error");
+                submitBtn.disabled = false;
+                submitBtn.textContent = "ENTER THE WHEEL";
             }
         }
     </script>
