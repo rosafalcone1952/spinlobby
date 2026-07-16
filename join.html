@@ -10,9 +10,9 @@
         :root {
             --bg-deep: #0a0a12;
             --bg-panel: #14141f;
-            --primary: #8a2be2; /* Deep violet */
+            --primary: #8a2be2;
             --primary-glow: rgba(138, 43, 226, 0.3);
-            --accent: #00e5ff; /* Cyan accent */
+            --accent: #00e5ff;
             --text-main: #f0f0f5;
             --text-muted: #8a8f98;
             --ease: cubic-bezier(0.23, 1, 0.32, 1);
@@ -32,7 +32,6 @@
             padding: 1.5rem;
         }
 
-        /* Container Card */
         .join-card {
             width: 100%;
             max-width: 420px;
@@ -42,10 +41,8 @@
             border: 1px solid rgba(255, 255, 255, 0.03);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 20px rgba(138, 43, 226, 0.05);
             text-align: center;
-            transition: transform 0.3s var(--ease);
         }
 
-        /* Header Elements */
         .logo {
             font-size: 2rem;
             font-weight: 800;
@@ -69,7 +66,6 @@
             line-height: 1.4;
         }
 
-        /* Form Controls */
         .form-group {
             position: relative;
             margin-bottom: 1.5rem;
@@ -105,7 +101,6 @@
             box-shadow: 0 0 15px var(--primary-glow);
         }
 
-        /* Submit Button */
         .submit-btn {
             background: linear-gradient(135deg, var(--primary) 0%, #512da8 100%);
             color: white;
@@ -134,7 +129,6 @@
             box-shadow: none;
         }
 
-        /* Status States */
         .status-message {
             margin-top: 1.5rem;
             font-size: 0.95rem;
@@ -185,13 +179,17 @@
     </div>
 
     <script>
-        // --- SUPABASE CONFIGURATION ---
         const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
-        
-        // !!! PASTE YOUR SAME ANON KEY HERE !!!
         const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; 
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // --- FILTER CONFIGURATION ---
+        // Keep these lowercase. The script automatically converts inputs to lowercase to check.
+        const forbiddenWords = [
+            'nigger', 'nigga', 'faggot', 'kike', 'retard', 'tranny', 'chink', // Hate speech
+            'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'whore' // Swear words
+        ];
 
         async function submitEntry(event) {
             event.preventDefault();
@@ -203,12 +201,29 @@
 
             if (!nameVal) return;
 
-            // Lock the button so they don't spam it
-            submitBtn.disabled = true;
-            submitBtn.textContent = "ENTERING...";
-            
+            // Reset status states
             statusBox.style.display = "none";
             statusBox.className = "status-message";
+
+            // 1. Anti-Swear/Anti-Racism Filter Check
+            const lowerName = nameVal.toLowerCase();
+            const isForbidden = forbiddenWords.some(word => lowerName.includes(word));
+            if (isForbidden) {
+                statusBox.textContent = "❌ Inappropriate language is not allowed.";
+                statusBox.classList.add("status-error");
+                return;
+            }
+
+            // 2. Anti-Spam: Character Limit Check
+            if (nameVal.length < 2 || nameVal.length > 15) {
+                statusBox.textContent = "❌ Name must be between 2 and 15 characters.";
+                statusBox.classList.add("status-error");
+                return;
+            }
+
+            // Lock submit button immediately
+            submitBtn.disabled = true;
+            submitBtn.textContent = "ENTERING...";
 
             try {
                 // Insert name into Supabase
@@ -218,11 +233,17 @@
 
                 if (error) throw error;
 
-                // Success State
+                // Success
                 statusBox.textContent = "🎉 You're on the wheel! Watch the stream!";
                 statusBox.classList.add("status-success");
-                usernameInput.value = ""; // Clear the input
+                usernameInput.value = ""; 
                 submitBtn.textContent = "SUBMITTED!";
+                
+                // Anti-Spam Cooldown: 4 seconds before they can submit another name
+                setTimeout(() => {
+                    submitBtn.disabled = false;
+                    submitBtn.textContent = "ENTER THE WHEEL";
+                }, 4000);
                 
             } catch (err) {
                 console.error("Submission failed: ", err.message);
