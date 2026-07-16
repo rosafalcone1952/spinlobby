@@ -4,72 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Join the Giveaway - StreamSpin</title>
-    <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        :root {
-            --bg-deep: #0a0a12;
-            --bg-panel: #14141f;
-            --primary: #8a2be2;
-            --primary-glow: rgba(138, 43, 226, 0.3);
-            --accent: #00e5ff;
-            --text-main: #f0f0f5;
-            --text-muted: #8a8f98;
-            --ease: cubic-bezier(0.23, 1, 0.32, 1);
-        }
-
+        :root { --bg-deep: #0a0a12; --bg-panel: #14141f; --primary: #8a2be2; --accent: #00e5ff; --text-main: #f0f0f5; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background-color: var(--bg-deep);
-            color: var(--text-main);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 1.5rem;
-        }
-
-        .join-card {
-            width: 100%;
-            max-width: 420px;
-            background-color: var(--bg-panel);
-            border-radius: 24px;
-            padding: 2.5rem 2rem;
-            border: 1px solid rgba(255, 255, 255, 0.03);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-            text-align: center;
-        }
-
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg-deep); color: var(--text-main); display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 1.5rem; }
+        .join-card { width: 100%; max-width: 420px; background-color: var(--bg-panel); border-radius: 24px; padding: 2.5rem 2rem; border: 1px solid rgba(255, 255, 255, 0.03); box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5); text-align: center; }
         .logo { font-size: 2rem; font-weight: 800; background: linear-gradient(135deg, #fff 0%, var(--primary) 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 2rem; }
-
-        .form-group { margin-bottom: 1.5rem; text-align: left; }
-
-        input[type="text"] { 
-            width: 100%; 
-            background-color: rgba(255, 255, 255, 0.02); 
-            border: 1.5px solid rgba(255, 255, 255, 0.08); 
-            border-radius: 12px; 
-            padding: 1rem 1.25rem; 
-            color: white; 
-            font-size: 1rem;
-        }
-
-        .submit-btn { 
-            background: linear-gradient(135deg, var(--primary) 0%, #512da8 100%); 
-            color: white; 
-            border: none; 
-            padding: 1.1rem; 
-            border-radius: 12px; 
-            cursor: pointer; 
-            width: 100%; 
-            font-weight: 700; 
-            transition: all 0.3s ease;
-        }
-
+        input[type="text"] { width: 100%; background-color: rgba(255, 255, 255, 0.02); border: 1.5px solid rgba(255, 255, 255, 0.08); border-radius: 12px; padding: 1rem; color: white; margin-bottom: 1rem; font-size: 1rem; }
+        .submit-btn { background: var(--primary); color: white; border: none; padding: 1.1rem; border-radius: 12px; width: 100%; font-weight: 700; cursor: pointer; transition: 0.3s; }
         .submit-btn:disabled { background: #252533; color: #5a5a6e; cursor: not-allowed; }
-
         .status-message { margin-top: 1.5rem; padding: 1rem; border-radius: 10px; display: none; }
         .status-error { display: block; background: rgba(255, 74, 90, 0.1); color: #ff4a5a; border: 1px solid rgba(255, 74, 90, 0.2); }
         .status-success { display: block; background: rgba(0, 229, 255, 0.1); color: var(--accent); border: 1px solid rgba(0, 229, 255, 0.2); }
@@ -80,9 +24,7 @@
     <div class="join-card">
         <div class="logo">StreamSpin<span style="color:var(--accent)">.</span></div>
         <form id="join-form" onsubmit="submitEntry(event)">
-            <div class="form-group">
-                <input type="text" id="username" placeholder="Enter your name..." required maxlength="15" autocomplete="off">
-            </div>
+            <input type="text" id="username" placeholder="Enter your name..." required maxlength="15" autocomplete="off">
             <button type="submit" id="submit-btn" class="submit-btn">ENTER THE WHEEL</button>
         </form>
         <div id="status-box" class="status-message"></div>
@@ -95,65 +37,69 @@
         
         const forbiddenWords = ['nigger', 'nigga', 'faggot', 'kike', 'retard', 'tranny', 'chink', 'fuck', 'shit', 'bitch', 'asshole', 'cunt', 'dick', 'pussy', 'whore'];
 
-        function checkTimeout() {
+        function checkStatus() {
             const timeoutEnd = localStorage.getItem('timeoutEnd');
+            const btn = document.getElementById("submit-btn");
+            const box = document.getElementById("status-box");
+
             if (timeoutEnd && Date.now() < parseInt(timeoutEnd)) {
-                const btn = document.getElementById("submit-btn");
                 btn.disabled = true;
                 btn.textContent = "TIMEOUT ACTIVE";
-                const box = document.getElementById("status-box");
                 box.textContent = "❌ You are timed out for 5 minutes.";
                 box.className = "status-message status-error";
-                box.style.display = "block";
-                return true;
+                return false; // User is banned
             }
-            return false;
+            return true; // User is okay
         }
-        checkTimeout();
+        
+        // Initial check on load
+        checkStatus();
 
         async function submitEntry(event) {
             event.preventDefault();
-            if (checkTimeout()) return;
+            if (!checkStatus()) return;
 
-            const submitBtn = document.getElementById("submit-btn");
-            const statusBox = document.getElementById("status-box");
             const nameInput = document.getElementById("username");
             const nameVal = nameInput.value.trim();
-
+            const statusBox = document.getElementById("status-box");
+            
             const cleanName = nameVal.toLowerCase().replace(/[^a-z0-9]/g, '');
+
             if (forbiddenWords.some(word => cleanName.includes(word))) {
-                localStorage.setItem('timeoutEnd', Date.now() + 300000); // 5 mins
-                checkTimeout();
+                let strikes = parseInt(localStorage.getItem('strikes') || '0') + 1;
+                localStorage.setItem('strikes', strikes);
+
+                if (strikes >= 3) {
+                    localStorage.setItem('timeoutEnd', Date.now() + 300000); // 5 mins
+                    statusBox.textContent = "❌ 3 Strikes! Timeout activated (5 mins).";
+                    checkStatus();
+                } else {
+                    statusBox.textContent = `❌ Warning ${strikes}/3: Inappropriate language. 3 strikes = 5 min ban!`;
+                    statusBox.className = "status-message status-error";
+                }
                 return;
             }
 
-            if (nameVal.length < 2) {
-                statusBox.textContent = "❌ Name too short.";
-                statusBox.className = "status-message status-error";
-                return;
-            }
-
+            const submitBtn = document.getElementById("submit-btn");
             submitBtn.disabled = true;
             submitBtn.textContent = "ENTERING...";
 
-            try {
-                const { error } = await supabaseClient.from('entries').insert([{ username: nameVal }]);
-                if (error) throw error;
-
-                statusBox.textContent = "🎉 You're on the wheel!";
-                statusBox.className = "status-message status-success";
-                nameInput.value = "";
-                
-                setTimeout(() => { 
-                    submitBtn.disabled = false; 
-                    submitBtn.textContent = "ENTER THE WHEEL"; 
-                    statusBox.style.display = "none";
-                }, 3000);
-            } catch (err) {
-                statusBox.textContent = "❌ Connection failed. Try again.";
+            const { error } = await supabaseClient.from('entries').insert([{ username: nameVal }]);
+            
+            if (error) {
+                statusBox.textContent = "❌ Error connecting to database.";
                 statusBox.className = "status-message status-error";
                 submitBtn.disabled = false;
                 submitBtn.textContent = "ENTER THE WHEEL";
+            } else {
+                statusBox.textContent = "🎉 You're on the wheel!";
+                statusBox.className = "status-message status-success";
+                nameInput.value = "";
+                setTimeout(() => { 
+                    submitBtn.disabled = false; 
+                    submitBtn.textContent = "ENTER THE WHEEL";
+                    statusBox.style.display = "none";
+                }, 3000);
             }
         }
     </script>
