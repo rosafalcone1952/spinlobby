@@ -3,59 +3,396 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Spin Lobby</title>
+    <title>🎡 Live Spin Wheel 🎡</title>
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; background: #121212; color: white; padding: 50px; }
-        h1 { color: #3ecf8e; }
-        #names-list { margin-top: 20px; font-size: 20px; list-style-type: none; padding: 0; }
-        li { background: #1e1e1e; padding: 10px; margin: 5px auto; width: 300px; border-radius: 5px; border: 1px solid #333; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            text-align: center;
+            background: #0f0f16;
+            color: white;
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
+
+        h1 {
+            color: #3ecf8e;
+            text-shadow: 0 0 15px rgba(62, 207, 142, 0.4);
+            margin-bottom: 5px;
+        }
+
+        .subtitle {
+            color: #8a8f98;
+            margin-bottom: 25px;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            gap: 50px;
+            flex-wrap: wrap;
+        }
+
+        /* Wheel Styling */
+        .wheel-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        /* The pointer arrow at the top */
+        .pointer {
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 15px solid transparent;
+            border-right: 15px solid transparent;
+            border-top: 30px solid #ff4a5a;
+            z-index: 10;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+
+        canvas {
+            border-radius: 50%;
+            box-shadow: 0 0 30px rgba(62, 207, 142, 0.2), 0 0 0 10px #1e1e24;
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+        }
+
+        /* Controls & Names List */
+        .panel {
+            background: #1e1e24;
+            padding: 25px;
+            border-radius: 12px;
+            border: 1px solid #2d2d38;
+            width: 300px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+            text-align: left;
+        }
+
+        .panel h2 {
+            margin-top: 0;
+            color: #3ecf8e;
+            border-bottom: 1px solid #2d2d38;
+            padding-bottom: 10px;
+        }
+
+        #spin-btn {
+            background: #3ecf8e;
+            color: #0f0f16;
+            border: none;
+            padding: 12px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 15px;
+            transition: all 0.2s;
+            box-shadow: 0 5px 15px rgba(62, 207, 142, 0.3);
+        }
+
+        #spin-btn:hover {
+            background: #4ef0a3;
+            transform: translateY(-2px);
+        }
+
+        #spin-btn:disabled {
+            background: #2d2d38;
+            color: #555;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        #names-list {
+            list-style: none;
+            padding: 0;
+            margin: 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        #names-list li {
+            background: #15151a;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 6px;
+            border-left: 4px solid #3ecf8e;
+            font-weight: 500;
+        }
+
+        /* Winner Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 100;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-content {
+            background: #1e1e24;
+            padding: 40px;
+            border-radius: 16px;
+            border: 2px solid #3ecf8e;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(62, 207, 142, 0.5);
+            animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        @keyframes popIn {
+            0% { transform: scale(0.5); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-content h2 {
+            color: #3ecf8e;
+            font-size: 36px;
+            margin: 0 0 10px 0;
+        }
+
+        .modal-content p {
+            font-size: 20px;
+            color: #8a8f98;
+            margin: 0 0 20px 0;
+        }
+
+        #winner-name {
+            font-size: 48px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 15px rgba(255,255,255,0.5);
+            margin-bottom: 30px;
+        }
+
+        .close-btn {
+            background: #ff4a5a;
+            color: white;
+            border: none;
+            padding: 10px 25px;
+            font-size: 16px;
+            border-radius: 6px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <h1>🎡 Spin Lobby 🎡</h1>
-    <p>Names added in real-time will show up below:</p>
-    
-    <ul id="names-list"></ul>
+    <h1>🎡 Live Spin Wheel 🎡</h1>
+    <p class="subtitle">Names added to your Supabase table will instantly join the wheel!</p>
+
+    <div class="container">
+        <!-- Wheel Graphic -->
+        <div class="wheel-container">
+            <div class="pointer"></div>
+            <canvas id="wheel" width="400" height="400"></canvas>
+        </div>
+
+        <!-- Dashboard Panel -->
+        <div class="panel">
+            <button id="spin-btn" onclick="spinWheel()" disabled>SPIN WHEEL</button>
+            <h2>Entries (<span id="count">0</span>)</h2>
+            <ul id="names-list"></ul>
+        </div>
+    </div>
+
+    <!-- Winner Announcement Popup -->
+    <div id="winner-modal" class="modal">
+        <div class="modal-content">
+            <h2>🏆 WE HAVE A WINNER! 🏆</h2>
+            <p>And the prize goes to...</p>
+            <div id="winner-name">---</div>
+            <button class="close-btn" onclick="closeModal()">Awesome!</button>
+        </div>
+    </div>
 
     <script>
-        // 1. YOUR SUPABASE KEYS
+        // 1. SUPABASE CONFIGURATION
         const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; // <-- Paste your key here!
+        const SUPABASE_ANON_KEY = "PASTE_YOUR_KEY_HERE"; // <-- Put your key here!
 
         const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // 2. Load existing names when page opens
-        async function getExistingNames() {
-            const { data, error } = await supabaseClient.from('entries').select('username');
-            if (data) {
-                data.forEach(entry => addNameToList(entry.username));
+        // State Variables
+        let participants = [];
+        const canvas = document.getElementById("wheel");
+        const ctx = canvas.getContext("2d");
+        const colors = ["#ff4a5a", "#3ecf8e", "#f5a623", "#4a90e2", "#b8e986", "#bd10e0", "#9013fe", "#50e3c2"];
+        let currentRotation = 0;
+        let isSpinning = false;
+
+        // Draw the wheel onto the canvas
+        function drawWheel() {
+            const numSegments = participants.length;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            if (numSegments === 0) {
+                // Empty state wheel
+                ctx.beginPath();
+                ctx.arc(200, 200, 190, 0, 2 * Math.PI);
+                ctx.fillStyle = "#1e1e24";
+                ctx.fill();
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = "#2d2d38";
+                ctx.stroke();
+
+                ctx.fillStyle = "#555";
+                ctx.font = "bold 16px Arial";
+                ctx.textAlign = "center";
+                ctx.fillText("Waiting for names...", 200, 205);
+                return;
             }
+
+            const anglePerSegment = (2 * Math.PI) / numSegments;
+
+            for (let i = 0; i < numSegments; i++) {
+                const startAngle = i * anglePerSegment;
+                const endAngle = startAngle + anglePerSegment;
+
+                // Draw Slice
+                ctx.beginPath();
+                ctx.moveTo(200, 200);
+                ctx.arc(200, 200, 195, startAngle, endAngle);
+                ctx.fillStyle = colors[i % colors.length];
+                ctx.fill();
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = "#0f0f16";
+                ctx.stroke();
+
+                // Draw Name Text
+                ctx.save();
+                ctx.translate(200, 200);
+                ctx.rotate(startAngle + anglePerSegment / 2);
+                ctx.textAlign = "right";
+                ctx.fillStyle = "#ffffff";
+                ctx.font = "bold 16px Arial";
+                // Don't let text overflow outside wheel boundary
+                const displayName = participants[i].length > 12 ? participants[i].substring(0, 10) + '..' : participants[i];
+                ctx.fillText(displayName, 180, 5);
+                ctx.restore();
+            }
+
+            // Outer ring
+            ctx.beginPath();
+            ctx.arc(200, 200, 195, 0, 2 * Math.PI);
+            ctx.lineWidth = 8;
+            ctx.strokeStyle = "#1e1e24";
+            ctx.stroke();
+
+            // Center Pin
+            ctx.beginPath();
+            ctx.arc(200, 200, 20, 0, 2 * Math.PI);
+            ctx.fillStyle = "#ffffff";
+            ctx.fill();
+            ctx.lineWidth = 5;
+            ctx.strokeStyle = "#3ecf8e";
+            ctx.stroke();
         }
 
-        // Helper to add name to screen
-        function addNameToList(name) {
+        // Logic to Spin the Wheel
+        function spinWheel() {
+            if (isSpinning || participants.length === 0) return;
+            isSpinning = true;
+            document.getElementById("spin-btn").disabled = true;
+
+            // Pick a random index as the winner
+            const winnerIndex = Math.floor(Math.random() * participants.length);
+            
+            // Calculate rotational target
+            const numSegments = participants.length;
+            const anglePerSegment = 360 / numSegments;
+            
+            // Math to ensure the wheel ends rotating on the selected segment pointing directly up (270 degrees)
+            const targetAngle = 270 - (winnerIndex * anglePerSegment) - (anglePerSegment / 2);
+            const extraSpins = 5 * 360; // Spin around 5 times before stopping
+            const finalRotation = extraSpins + targetAngle;
+
+            canvas.style.transform = `rotate(${finalRotation}deg)`;
+
+            // Wait 4 seconds for transition animation to complete
+            setTimeout(() => {
+                const winner = participants[winnerIndex];
+                
+                // Show modal with winner name
+                document.getElementById("winner-name").textContent = winner;
+                document.getElementById("winner-modal").style.display = "flex";
+
+                // Reset rotation cleanly behind the scenes
+                canvas.style.transition = "none";
+                const normalizedAngle = finalRotation % 360;
+                canvas.style.transform = `rotate(${normalizedAngle}deg)`;
+                
+                isSpinning = false;
+                document.getElementById("spin-btn").disabled = false;
+                
+                // Re-enable CSS transition for the next spin
+                setTimeout(() => {
+                    canvas.style.transition = "transform 4s cubic-bezier(0.1, 0.8, 0.1, 1)";
+                }, 50);
+
+            }, 4000);
+        }
+
+        function closeModal() {
+            document.getElementById("winner-modal").style.display = "none";
+        }
+
+        // Add visual item to sidebar
+        function renderName(name) {
             const list = document.getElementById('names-list');
             const li = document.createElement('li');
             li.textContent = name;
             list.appendChild(li);
         }
 
-        // 3. LISTEN REAL-TIME FOR NEW NAMES!
+        // Main function to refresh state
+        function updateUI() {
+            document.getElementById("count").textContent = participants.length;
+            document.getElementById("spin-btn").disabled = (participants.length === 0 || isSpinning);
+            drawWheel();
+        }
+
+        // Fetch current database entries on startup
+        async function loadExistingNames() {
+            const { data, error } = await supabaseClient.from('entries').select('username');
+            if (data) {
+                participants = data.map(entry => entry.username);
+                const list = document.getElementById('names-list');
+                list.innerHTML = "";
+                participants.forEach(name => renderName(name));
+                updateUI();
+            }
+        }
+
+        // Listen for brand-new entries in real-time
         supabaseClient
             .channel('schema-db-changes')
             .on('postgres_changes', 
                 { event: 'INSERT', schema: 'public', table: 'entries' }, 
                 payload => {
-                    addNameToList(payload.new.username);
+                    const newName = payload.new.username;
+                    participants.push(newName);
+                    renderName(newName);
+                    updateUI();
                 }
             )
             .subscribe();
 
-        // Run on start
-        getExistingNames();
+        // Initial setup
+        loadExistingNames();
     </script>
 </body>
 </html>
