@@ -6,6 +6,8 @@
     <title>StreamSpin Pro - Dashboard</title>
     <!-- Supabase Library -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Winwheel/2.7.0/Winwheel.min.js"></script>
     <style>
         :root { 
             --bg-deep: #0a0a12; 
@@ -24,7 +26,7 @@
             justify-content: center; 
             min-height: 100vh; 
             padding: 2rem; 
-        }
+        }S
         .dashboard { 
             width: 100%; 
             max-width: 400px; 
@@ -68,61 +70,69 @@
             cursor: pointer; 
             font-weight: 600; 
         }
-    </style>
+        /* ... your code is here ... */
+    padding: 2rem;
+}  <-- THIS IS THE CLOSING STYLE TAG
+        #canvas {
+    display: block;
+    margin: 20px auto;
+    max-width: 100%;
+}
+  </style>
 </head>
 <body>
 
     <div class="dashboard">
         <h2>Live Entries (<span id="count">0</span>)</h2>
+        <canvas id="canvas" width="400" height="400">Canvas not supported.</canvas>
         <ul id="names-list"></ul>
         <button class="btn-spin" id="spin-btn" onclick="spinWheel()">SPIN FOR WINNER</button>
         <button class="btn-clear" onclick="clearEntries()">CLEAR ALL ENTRIES</button>
     </div>
 
     <script>
-        const SUPABASE_URL = "https://rsfxynywmcvkyzutuhlc.supabase.co";
-        const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUVoyYJAAcWVwEg_QSYLJ__h"; 
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const SUPABASE_URL = "https://rsfxyynwmcvykzytuhlc.supabase.co";
+    const SUPABASE_ANON_KEY = "sb_publishable_0a5CYc6SUvoyYJAacVWeg_QSYLJ__h";
+    const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-        // --- CLEAR DATABASE FUNCTION ---
-        async function clearEntries() {
-            if (!confirm("Are you sure you want to delete ALL entries from the database?")) return;
+    let theWheel;
+
+    async function updateWheel() {
+        const { data } = await supabaseClient.from('entries').select('username');
+        document.getElementById('count').textContent = data ? data.length : 0;
+
+        if (data && data.length > 0) {
+            const segments = data.map(d => ({ 'text': d.username, 'fillStyle': '#8a2be2' }));
             
-            const { error } = await supabaseClient
-                .from('entries')
-                .delete()
-                .neq('username', 'nonexistent'); // Deletes all rows
-
-            if (error) {
-                alert("Error clearing entries: " + error.message);
-            } else {
-                // List will update automatically via real-time listener
-            }
+            theWheel = new Winwheel({
+                'numSegments': segments.length,
+                'segments': segments,
+                'animation': {
+                    'type': 'spinToStop',
+                    'duration': 5,
+                    'spins': 8
+                }
+            });
+            theWheel.draw();
         }
+    }
 
-        // --- LOAD NAMES ---
-        async function loadNames() {
-            const { data } = await supabaseClient.from('entries').select('username');
-            if (data) {
-                const list = document.getElementById('names-list');
-                document.getElementById('count').textContent = data.length;
-                list.innerHTML = data.map(d => `<li>${d.username}</li>`).join('');
-            }
+    function spinWheel() {
+        if (theWheel) {
+            theWheel.startAnimation();
+        } else {
+            alert("No entries to spin!");
         }
+    }
 
-        // --- REAL-TIME LISTENER ---
-        supabaseClient.channel('entries')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'entries' }, () => {
-                loadNames();
-            })
-            .subscribe();
+    async function clearEntries() {
+        if (!confirm("Are you sure you want to delete ALL entries?")) return;
+        await supabaseClient.from('entries').delete().neq('username', 'nonexistent');
+        location.reload();
+    }
 
-        // Initial Load
-        loadNames();
-
-        function spinWheel() { 
-            alert("Spinning the wheel! (Add your wheel animation logic here)"); 
-        }
+    // Initialize
+    updateWheel();
     </script>
 </body>
 </html>
